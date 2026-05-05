@@ -4,6 +4,7 @@
   const STORAGE_KEY = 'revest-house-obras-budget-v1';
   const SAVED_BUDGETS_KEY = 'revest-house-obras-saved-budgets-v2';
   const CURRENT_BUDGET_KEY = 'revest-house-obras-current-budget-id-v2';
+  const SAVED_SELLERS_KEY = 'revest-house-obras-saved-sellers-v1';
   const { calculateBudget, toNumber, round2 } = window.RevestHouseCalculator;
   let currentBudgetId = localStorage.getItem(CURRENT_BUDGET_KEY) || '';
 
@@ -26,6 +27,12 @@
   elements.measurementsList = document.getElementById('measurementsList');
   elements.measurementTemplate = document.getElementById('measurementTemplate');
   elements.addMeasurementBtn = document.getElementById('addMeasurementBtn');
+  elements.sellersList = document.getElementById('sellersList');
+  elements.sellerTemplate = document.getElementById('sellerTemplate');
+  elements.sellerSelect = document.getElementById('sellerSelect');
+  elements.addSellerBtn = document.getElementById('addSellerBtn');
+  elements.applySellerBtn = document.getElementById('applySellerBtn');
+  elements.savedSellersCount = document.getElementById('savedSellersCount');
   elements.newBudgetBtn = document.getElementById('newBudgetBtn');
   elements.saveBtn = document.getElementById('saveBtn');
   elements.pdfBtn = document.getElementById('pdfBtn');
@@ -94,6 +101,15 @@
     };
   }
 
+  function emptySeller() {
+    return {
+      id: createId('seller'),
+      name: '',
+      whatsapp: '',
+      email: ''
+    };
+  }
+
   function defaultData() {
     const product = emptyProduct();
     return {
@@ -113,6 +129,99 @@
     } catch (error) {
       return [];
     }
+  }
+
+  function getSavedSellers() {
+    try {
+      const stored = localStorage.getItem(SAVED_SELLERS_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+      return [];
+    }
+  }
+
+  function setSavedSellers(sellers) {
+    localStorage.setItem(SAVED_SELLERS_KEY, JSON.stringify(sellers));
+  }
+
+  function readSellers() {
+    return Array.from(elements.sellersList.querySelectorAll('.seller-item')).map((item) => ({
+      id: item.dataset.sellerId,
+      name: item.querySelector('.saved-seller-name').value,
+      whatsapp: item.querySelector('.saved-seller-whatsapp').value,
+      email: item.querySelector('.saved-seller-email').value
+    }));
+  }
+
+  function addSeller(seller) {
+    const data = seller || emptySeller();
+    const clone = elements.sellerTemplate.content.firstElementChild.cloneNode(true);
+    clone.dataset.sellerId = data.id;
+    clone.querySelector('.saved-seller-name').value = data.name || '';
+    clone.querySelector('.saved-seller-whatsapp').value = data.whatsapp || '';
+    clone.querySelector('.saved-seller-email').value = data.email || '';
+    elements.sellersList.appendChild(clone);
+    updateSellerTitles();
+  }
+
+  function updateSellerTitles() {
+    readSellers().forEach((seller, index) => {
+      const item = elements.sellersList.querySelector(`[data-seller-id="${seller.id}"]`);
+      item.querySelector('.seller-title').textContent = seller.name || `Vendedor ${index + 1}`;
+    });
+  }
+
+  function saveSellers() {
+    const sellers = readSellers();
+    setSavedSellers(sellers);
+    renderSellerSelect();
+  }
+
+  function renderSellers() {
+    let sellers = getSavedSellers();
+    if (!sellers.length) {
+      sellers = [emptySeller()];
+      setSavedSellers(sellers);
+    }
+
+    elements.sellersList.innerHTML = '';
+    sellers.forEach(addSeller);
+    renderSellerSelect();
+  }
+
+  function renderSellerSelect() {
+    const currentValue = elements.sellerSelect.value;
+    const sellers = getSavedSellers();
+    elements.sellerSelect.innerHTML = '';
+
+    const blank = document.createElement('option');
+    blank.value = '';
+    blank.textContent = 'Selecione um vendedor';
+    elements.sellerSelect.appendChild(blank);
+
+    sellers.forEach((seller) => {
+      const option = document.createElement('option');
+      option.value = seller.id;
+      option.textContent = seller.name || 'Vendedor sem nome';
+      elements.sellerSelect.appendChild(option);
+    });
+
+    elements.sellerSelect.value = sellers.some((seller) => seller.id === currentValue) ? currentValue : '';
+    const filledSellers = sellers.filter((seller) => seller.name || seller.whatsapp || seller.email);
+    elements.savedSellersCount.textContent = String(filledSellers.length);
+  }
+
+  function applySelectedSeller() {
+    saveSellers();
+    const sellerId = elements.sellerSelect.value;
+    const seller = getSavedSellers().find((item) => item.id === sellerId);
+    if (!seller) return;
+
+    elements.sellerName.value = seller.name || '';
+    elements.sellerWhatsapp.value = seller.whatsapp || '';
+    elements.sellerEmail.value = seller.email || '';
+    updateUi();
+    saveData();
   }
 
   function setSavedBudgets(budgets) {
@@ -559,6 +668,11 @@
 
   elements.form.addEventListener('input', (event) => {
     if (event.target.closest('.budget-manager')) return;
+    if (event.target.closest('.sellers-panel')) {
+      updateSellerTitles();
+      saveSellers();
+      return;
+    }
     if (event.target.classList.contains('product-name')) renderAllProductChoices();
     updateUi();
     saveData();
@@ -566,6 +680,10 @@
 
   elements.form.addEventListener('change', (event) => {
     if (event.target.closest('.budget-manager')) return;
+    if (event.target.closest('.sellers-panel')) {
+      saveSellers();
+      return;
+    }
     updateUi();
     saveData();
   });
@@ -594,6 +712,26 @@
     renderAllProductChoices();
     updateUi();
     saveData();
+  });
+
+  elements.addSellerBtn.addEventListener('click', () => {
+    addSeller(emptySeller());
+    saveSellers();
+  });
+
+  elements.applySellerBtn.addEventListener('click', applySelectedSeller);
+  elements.sellerSelect.addEventListener('change', applySelectedSeller);
+
+  elements.sellersList.addEventListener('click', (event) => {
+    if (!event.target.classList.contains('remove-seller')) return;
+    const sellers = elements.sellersList.querySelectorAll('.seller-item');
+    if (sellers.length === 1) {
+      const item = sellers[0];
+      item.querySelectorAll('input').forEach((input) => { input.value = ''; });
+    } else {
+      event.target.closest('.seller-item').remove();
+    }
+    saveSellers();
   });
 
   elements.measurementsList.addEventListener('click', (event) => {
@@ -633,6 +771,7 @@
   elements.pdfBtn.addEventListener('click', printPdf);
 
   initializeBudgetStorage();
+  renderSellers();
   writeFormData(loadData());
   renderSavedBudgets();
 })();
