@@ -40,6 +40,22 @@ body {
   box-shadow: var(--shadow);
 }
 
+.brand-block {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.brand-logo {
+  width: 145px;
+  max-width: 34vw;
+  height: auto;
+  border-radius: 6px;
+  background: #fff;
+  padding: 6px;
+}
+
 .brand-kicker {
   margin: 0 0 6px;
   color: #f2c46d;
@@ -104,6 +120,11 @@ h1 {
 
 .compact { min-height: 44px; }
 
+.danger-button {
+  background: var(--danger);
+  color: #fff;
+}
+
 .workspace {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;
@@ -162,6 +183,11 @@ h1 {
 .fields {
   display: grid;
   gap: 14px;
+}
+
+.budget-manager-fields {
+  grid-template-columns: minmax(0, 1fr) max-content;
+  align-items: end;
 }
 
 .two-columns { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -313,7 +339,7 @@ select:focus {
 
 .product-summary-item {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) repeat(5, max-content);
+  grid-template-columns: minmax(0, 1fr) repeat(6, max-content);
   gap: 10px;
   align-items: center;
   padding: 12px;
@@ -433,9 +459,11 @@ select:focus {
 @media (max-width: 720px) {
   .app-shell { padding: 10px; }
   .app-header { align-items: stretch; flex-direction: column; padding: 18px; }
+  .brand-block { align-items: flex-start; }
   .header-actions { display: grid; grid-template-columns: repeat(3, 1fr); }
   .button { width: 100%; padding: 0 10px; }
   .two-columns,
+  .budget-manager-fields,
   .result-grid { grid-template-columns: 1fr; }
   .measurement-fields { grid-template-columns: 1fr; }
   .product-choice-list { grid-template-columns: 1fr; }
@@ -448,6 +476,8 @@ select:focus {
 
 @media (max-width: 420px) {
   .header-actions { grid-template-columns: 1fr; }
+  .brand-block { flex-direction: column; }
+  .brand-logo { width: 175px; max-width: 76vw; }
   h1 { font-size: 1.85rem; }
   .panel { padding: 14px; }
 }

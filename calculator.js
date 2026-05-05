@@ -12,6 +12,12 @@
     return Math.round((value + Number.EPSILON) * 100) / 100;
   }
 
+  function roundUpToPackage(value, packageSize) {
+    const size = toNumber(packageSize);
+    if (value <= 0 || size <= 0) return value;
+    return Math.ceil(value / size) * size;
+  }
+
   function calculateBudget(data) {
     const measurements = data.measurements || [];
     const totalArea = measurements.reduce((sum, item) => {
@@ -24,17 +30,21 @@
         if (!selectedProducts.includes(product.id)) return sum;
         return sum + toNumber(item.width) * toNumber(item.height);
       }, 0);
-      const requiredKg = productArea * toNumber(product.consumption);
-      const grossValue = requiredKg * toNumber(product.price);
+      const calculatedQuantity = productArea * toNumber(product.consumption);
+      const saleQuantity = roundUpToPackage(calculatedQuantity, product.packageSize);
+      const grossValue = saleQuantity * toNumber(product.price);
 
       return {
         id: product.id,
         name: product.name || 'Produto',
         application: product.application || '',
+        unit: product.unit || 'kg',
         consumption: round2(toNumber(product.consumption)),
+        packageSize: round2(toNumber(product.packageSize)),
         price: round2(toNumber(product.price)),
         area: round2(productArea),
-        requiredKg: round2(requiredKg),
+        calculatedQuantity: round2(calculatedQuantity),
+        requiredKg: round2(saleQuantity),
         grossValue: round2(grossValue)
       };
     });
@@ -56,5 +66,5 @@
     };
   }
 
-  global.RevestHouseCalculator = { calculateBudget, toNumber, round2 };
+  global.RevestHouseCalculator = { calculateBudget, toNumber, round2, roundUpToPackage };
 })(typeof window !== 'undefined' ? window : globalThis);
