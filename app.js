@@ -144,6 +144,13 @@
     localStorage.setItem(SAVED_SELLERS_KEY, JSON.stringify(sellers));
   }
 
+  function isSellerFilled(seller) {
+    const name = (seller.name || '').trim();
+    const whatsapp = (seller.whatsapp || '').trim();
+    const email = (seller.email || '').trim();
+    return Boolean((name && name !== 'Vendedor sem nome') || whatsapp || email);
+  }
+
   function readSellers() {
     return Array.from(elements.sellersList.querySelectorAll('.seller-item')).map((item) => ({
       id: item.dataset.sellerId,
@@ -164,6 +171,20 @@
     updateSellerTitles();
   }
 
+  function focusEmptySellerCard() {
+    const emptyCard = Array.from(elements.sellersList.querySelectorAll('.seller-item')).find((item) => {
+      const name = item.querySelector('.saved-seller-name').value.trim();
+      const whatsapp = item.querySelector('.saved-seller-whatsapp').value.trim();
+      const email = item.querySelector('.saved-seller-email').value.trim();
+      return !name && !whatsapp && !email;
+    });
+
+    if (!emptyCard) return false;
+    emptyCard.querySelector('.saved-seller-name').focus();
+    emptyCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return true;
+  }
+
   function updateSellerTitles() {
     readSellers().forEach((seller, index) => {
       const item = elements.sellersList.querySelector(`[data-seller-id="${seller.id}"]`);
@@ -172,17 +193,14 @@
   }
 
   function saveSellers() {
-    const sellers = readSellers();
+    const sellers = readSellers().filter(isSellerFilled);
     setSavedSellers(sellers);
     renderSellerSelect();
   }
 
   function renderSellers() {
-    let sellers = getSavedSellers();
-    if (!sellers.length) {
-      sellers = [emptySeller()];
-      setSavedSellers(sellers);
-    }
+    const sellers = getSavedSellers().filter(isSellerFilled);
+    setSavedSellers(sellers);
 
     elements.sellersList.innerHTML = '';
     sellers.forEach(addSeller);
@@ -191,7 +209,8 @@
 
   function renderSellerSelect() {
     const currentValue = elements.sellerSelect.value;
-    const sellers = getSavedSellers();
+    const sellers = getSavedSellers().filter(isSellerFilled);
+    setSavedSellers(sellers);
     elements.sellerSelect.innerHTML = '';
 
     const blank = document.createElement('option');
@@ -207,8 +226,7 @@
     });
 
     elements.sellerSelect.value = sellers.some((seller) => seller.id === currentValue) ? currentValue : '';
-    const filledSellers = sellers.filter((seller) => seller.name || seller.whatsapp || seller.email);
-    elements.savedSellersCount.textContent = String(filledSellers.length);
+    elements.savedSellersCount.textContent = String(sellers.length);
   }
 
   function applySelectedSeller() {
@@ -715,8 +733,12 @@
   });
 
   elements.addSellerBtn.addEventListener('click', () => {
+    if (focusEmptySellerCard()) return;
     addSeller(emptySeller());
-    saveSellers();
+    const sellers = elements.sellersList.querySelectorAll('.seller-item');
+    const lastSeller = sellers[sellers.length - 1];
+    lastSeller.querySelector('.saved-seller-name').focus();
+    lastSeller.scrollIntoView({ behavior: 'smooth', block: 'center' });
   });
 
   elements.applySellerBtn.addEventListener('click', applySelectedSeller);
