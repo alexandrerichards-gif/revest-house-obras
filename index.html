@@ -3,16 +3,19 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Revest House Obras 1.0</title>
+    <title>Revest House Obras Beta</title>
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
     <div class="app-shell">
       <header class="app-header">
-        <div>
-          <p class="brand-kicker">Orcamentos de campo</p>
-          <h1>Revest House Obras 1.0</h1>
-          <p class="header-copy">Medicoes, consumo de produtos e proposta em PDF.</p>
+        <div class="brand-block">
+          <img class="brand-logo" src="logo2.jpg" alt="Revest House">
+          <div>
+            <p class="brand-kicker">Orcamentos de campo</p>
+            <h1>Revest House Obras Beta</h1>
+            <p class="header-copy">Medicoes, consumo de produtos e proposta em PDF.</p>
+          </div>
         </div>
         <div class="header-actions">
           <button class="button button-secondary" id="newBudgetBtn" type="button">Novo</button>
@@ -23,6 +26,35 @@
 
       <main class="workspace">
         <form id="budgetForm" class="form-grid" autocomplete="on">
+          <section class="panel budget-manager">
+            <div class="section-title with-action">
+              <div><span id="savedBudgetsCount">0</span><h2>Orcamentos salvos</h2></div>
+              <button class="button button-secondary compact" id="loadBudgetBtn" type="button">Carregar pedido</button>
+            </div>
+            <div class="fields budget-manager-fields">
+              <label>
+                Selecione um pedido
+                <select id="savedBudgetsSelect"></select>
+              </label>
+              <button class="button danger-button" id="deleteBudgetBtn" type="button">Excluir pedido</button>
+            </div>
+          </section>
+
+          <section class="panel sellers-panel">
+            <div class="section-title with-action">
+              <div><span id="savedSellersCount">0</span><h2>Vendedores cadastrados</h2></div>
+              <button class="button button-secondary compact" id="addSellerBtn" type="button">Adicionar vendedor</button>
+            </div>
+            <div class="fields seller-picker">
+              <label>
+                Selecionar vendedor do orcamento
+                <select id="sellerSelect"></select>
+              </label>
+              <button class="button button-secondary compact" id="applySellerBtn" type="button">Usar vendedor</button>
+            </div>
+            <div id="sellersList" class="sellers-list"></div>
+          </section>
+
           <section class="panel">
             <div class="section-title"><span>1</span><h2>Cliente</h2></div>
             <div class="fields two-columns">
@@ -71,7 +103,7 @@
             </div>
             <div class="result-grid">
               <div><span>Area total</span><strong id="summaryArea">0,00 m2</strong></div>
-              <div><span>Quantidade de material</span><strong id="summaryKg">0,00 kg</strong></div>
+              <div><span>Quantidade de venda</span><strong id="summaryKg">0,00 kg</strong></div>
               <div><span>Valor bruto</span><strong id="summaryGross">R$ 0,00</strong></div>
               <div><span>Desconto</span><strong id="summaryDiscount">R$ 0,00</strong></div>
               <div class="final-total"><span>Valor final</span><strong id="summaryFinal">R$ 0,00</strong></div>
@@ -133,9 +165,25 @@
         <div class="fields two-columns">
           <label>Nome do produto<input class="product-name" type="text" placeholder="Lamato, massa niveladora..."></label>
           <label>Tipo de aplicacao<input class="product-application" type="text" placeholder="Acabamento, fundo, nivelamento..."></label>
-          <label>Consumo em kg por m2<input class="product-consumption" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Ex: 1,35"></label>
-          <label>Preco por kg<input class="product-price" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Ex: 8,50"></label>
+          <label>Unidade<select class="product-unit"><option value="kg">kg</option><option value="L">L</option></select></label>
+          <label>Consumo por m2<input class="product-consumption" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Ex: 1,35"></label>
+          <label>Preco por unidade<input class="product-price" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Ex: 8,50"></label>
+          <label>Embalagem / arredondar para<input class="product-package-size" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Ex: 25"></label>
           <label class="full-span">Observacoes do produto<textarea class="product-notes" rows="3" placeholder="Cor, linha, preparo, perdas etc."></textarea></label>
+        </div>
+      </article>
+    </template>
+
+    <template id="sellerTemplate">
+      <article class="seller-item">
+        <div class="seller-heading">
+          <strong class="seller-title">Vendedor</strong>
+          <button class="icon-button remove-seller" type="button" aria-label="Remover vendedor">Remover</button>
+        </div>
+        <div class="fields three-columns">
+          <label>Nome<input class="saved-seller-name" type="text" placeholder="Nome do vendedor"></label>
+          <label>WhatsApp<input class="saved-seller-whatsapp" type="tel" placeholder="Contato"></label>
+          <label>E-mail / assinatura<input class="saved-seller-email" type="text" placeholder="assinatura@revesthouse.com.br"></label>
         </div>
       </article>
     </template>
