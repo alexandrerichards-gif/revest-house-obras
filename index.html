@@ -1,0 +1,148 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Revest House Obras 1.0</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-header">
+        <div>
+          <p class="brand-kicker">Orcamentos de campo</p>
+          <h1>Revest House Obras 1.0</h1>
+          <p class="header-copy">Medicoes, consumo de produtos e proposta em PDF.</p>
+        </div>
+        <div class="header-actions">
+          <button class="button button-secondary" id="newBudgetBtn" type="button">Novo</button>
+          <button class="button button-secondary" id="saveBtn" type="button">Salvar</button>
+          <button class="button button-primary" id="pdfBtn" type="button">Gerar PDF</button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <form id="budgetForm" class="form-grid" autocomplete="on">
+          <section class="panel">
+            <div class="section-title"><span>1</span><h2>Cliente</h2></div>
+            <div class="fields two-columns">
+              <label>Nome<input id="clientName" name="clientName" type="text" placeholder="Nome do cliente"></label>
+              <label>WhatsApp<input id="clientWhatsapp" name="clientWhatsapp" type="tel" placeholder="(00) 00000-0000"></label>
+              <label>E-mail<input id="clientEmail" name="clientEmail" type="email" placeholder="cliente@email.com"></label>
+              <label>CPF/CNPJ<input id="clientDocument" name="clientDocument" type="text" placeholder="Opcional"></label>
+              <label class="full-span">Observacoes<textarea id="clientNotes" name="clientNotes" rows="3" placeholder="Informacoes importantes do cliente"></textarea></label>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="section-title"><span>2</span><h2>Obra</h2></div>
+            <div class="fields two-columns">
+              <label>Nome da obra<input id="jobName" name="jobName" type="text" placeholder="Ex: Fachada residencia"></label>
+              <label>Tipo de obra<input id="jobType" name="jobType" type="text" placeholder="Muro, casa, fachada..."></label>
+              <label class="full-span">Endereco<input id="jobAddress" name="jobAddress" type="text" placeholder="Rua, numero, complemento"></label>
+              <label>Bairro<input id="jobDistrict" name="jobDistrict" type="text" placeholder="Bairro"></label>
+              <label>Cidade<input id="jobCity" name="jobCity" type="text" placeholder="Cidade"></label>
+              <label>Data do orcamento<input id="budgetDate" name="budgetDate" type="date"></label>
+            </div>
+          </section>
+
+          <section class="panel products-panel">
+            <div class="section-title with-action">
+              <div><span>3</span><h2>Produtos</h2></div>
+              <button class="button button-secondary compact" id="addProductBtn" type="button">Adicionar produto</button>
+            </div>
+            <div id="productsList" class="products-list"></div>
+          </section>
+
+          <section class="panel measurements-panel">
+            <div class="section-title with-action">
+              <div><span>4</span><h2>Medicoes</h2></div>
+              <button class="button button-secondary compact" id="addMeasurementBtn" type="button">Adicionar</button>
+            </div>
+            <div id="measurementsList" class="measurements-list"></div>
+            <div class="total-strip"><span>Total medido</span><strong id="totalAreaDisplay">0,00 m2</strong></div>
+          </section>
+
+          <section class="panel">
+            <div class="section-title"><span>5</span><h2>Calculo</h2></div>
+            <div class="fields two-columns">
+              <label>Tipo de desconto<select id="discountType" name="discountType"><option value="percent">Porcentagem</option><option value="fixed">Valor fixo</option></select></label>
+              <label>Desconto<input id="discountValue" name="discountValue" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0"></label>
+            </div>
+            <div class="result-grid">
+              <div><span>Area total</span><strong id="summaryArea">0,00 m2</strong></div>
+              <div><span>Quantidade de material</span><strong id="summaryKg">0,00 kg</strong></div>
+              <div><span>Valor bruto</span><strong id="summaryGross">R$ 0,00</strong></div>
+              <div><span>Desconto</span><strong id="summaryDiscount">R$ 0,00</strong></div>
+              <div class="final-total"><span>Valor final</span><strong id="summaryFinal">R$ 0,00</strong></div>
+            </div>
+            <div class="product-summary-list" id="productSummaryList"></div>
+          </section>
+
+          <section class="panel">
+            <div class="section-title"><span>6</span><h2>Observacoes comerciais</h2></div>
+            <label class="single-label">Condicoes, validade, prazo e forma de pagamento<textarea id="commercialNotes" name="commercialNotes" rows="5" placeholder="Ex: Orcamento valido por 7 dias. Valores sujeitos a conferencia final em obra."></textarea></label>
+          </section>
+
+          <section class="panel">
+            <div class="section-title"><span>7</span><h2>Vendedor</h2></div>
+            <div class="fields two-columns">
+              <label>Nome<input id="sellerName" name="sellerName" type="text" placeholder="Nome do vendedor"></label>
+              <label>WhatsApp<input id="sellerWhatsapp" name="sellerWhatsapp" type="tel" placeholder="Contato do vendedor"></label>
+              <label class="full-span">E-mail / assinatura<input id="sellerEmail" name="sellerEmail" type="text" placeholder="assinatura@revesthouse.com.br"></label>
+            </div>
+          </section>
+        </form>
+
+        <aside class="summary-card" aria-live="polite">
+          <p class="summary-label">Resumo</p>
+          <h2 id="previewClient">Cliente nao informado</h2>
+          <dl>
+            <div><dt>Obra</dt><dd id="previewJob">Nao informada</dd></div>
+            <div><dt>Produtos</dt><dd id="previewProduct">Nenhum produto</dd></div>
+            <div><dt>Total</dt><dd id="previewArea">0,00 m2</dd></div>
+            <div><dt>Material</dt><dd id="previewKg">0,00 kg</dd></div>
+            <div class="preview-final"><dt>Valor final</dt><dd id="previewFinal">R$ 0,00</dd></div>
+          </dl>
+        </aside>
+      </main>
+    </div>
+
+    <template id="measurementTemplate">
+      <article class="measurement-item">
+        <div class="measurement-fields">
+          <label>Area<input class="measurement-name" type="text" placeholder="Muro, parede, fachada..."></label>
+          <label>Largura<input class="measurement-width" type="number" min="0" step="0.01" inputmode="decimal" placeholder="m"></label>
+          <label>Altura<input class="measurement-height" type="number" min="0" step="0.01" inputmode="decimal" placeholder="m"></label>
+          <div class="measurement-total"><span>Metragem</span><strong>0,00 m2</strong></div>
+        </div>
+        <div class="measurement-products">
+          <span>Produtos aplicados nesta medicao</span>
+          <div class="product-choice-list"></div>
+        </div>
+        <button class="icon-button remove-measurement" type="button" aria-label="Remover medicao">Remover</button>
+      </article>
+    </template>
+
+    <template id="productTemplate">
+      <article class="product-item">
+        <div class="product-heading">
+          <strong class="product-title">Produto</strong>
+          <button class="icon-button remove-product" type="button" aria-label="Remover produto">Remover</button>
+        </div>
+        <div class="fields two-columns">
+          <label>Nome do produto<input class="product-name" type="text" placeholder="Lamato, massa niveladora..."></label>
+          <label>Tipo de aplicacao<input class="product-application" type="text" placeholder="Acabamento, fundo, nivelamento..."></label>
+          <label>Consumo em kg por m2<input class="product-consumption" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Ex: 1,35"></label>
+          <label>Preco por kg<input class="product-price" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Ex: 8,50"></label>
+          <label class="full-span">Observacoes do produto<textarea class="product-notes" rows="3" placeholder="Cor, linha, preparo, perdas etc."></textarea></label>
+        </div>
+      </article>
+    </template>
+
+    <script src="calculator.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
+
+
