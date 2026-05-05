@@ -31,6 +31,8 @@
         id: product.id,
         name: product.name || 'Produto',
         application: product.application || '',
+        consumption: round2(toNumber(product.consumption)),
+        price: round2(toNumber(product.price)),
         area: round2(productArea),
         requiredKg: round2(requiredKg),
         grossValue: round2(grossValue)

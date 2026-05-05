@@ -255,17 +255,43 @@
     elements.productSummaryList.innerHTML = '';
     if (!totals.productTotals.length) return;
 
+    const header = document.createElement('div');
+    header.className = 'product-summary-item product-summary-header';
+    header.innerHTML = `
+      <strong>Produto</strong>
+      <span>Metragem</span>
+      <span>Consumo</span>
+      <span>Quantidade</span>
+      <span>Preco/kg</span>
+      <span>Valor</span>
+    `;
+    elements.productSummaryList.appendChild(header);
+
     totals.productTotals.forEach((product) => {
       const row = document.createElement('div');
       row.className = 'product-summary-item';
       row.innerHTML = `
         <strong>${escapeHtml(product.name)}</strong>
         <span>${formatArea(product.area)}</span>
+        <span>${formatKg(product.consumption)}/m2</span>
         <span>${formatKg(product.requiredKg)}</span>
+        <span>${formatMoney(product.price)}</span>
         <span>${formatMoney(product.grossValue)}</span>
       `;
       elements.productSummaryList.appendChild(row);
     });
+
+    const total = document.createElement('div');
+    total.className = 'product-summary-item product-summary-total';
+    total.innerHTML = `
+      <strong>Total de materiais</strong>
+      <span>${formatArea(totals.totalArea)}</span>
+      <span></span>
+      <span>${formatKg(totals.requiredKg)}</span>
+      <span></span>
+      <span>${formatMoney(totals.grossValue)}</span>
+    `;
+    elements.productSummaryList.appendChild(total);
   }
 
   function updateUi() {
@@ -319,10 +345,12 @@
   }
 
   function buildProductRows(totals) {
-    if (!totals.productTotals.length) return '<tr><td colspan="5">Nenhum produto cadastrado.</td></tr>';
-    return totals.productTotals.map((product) => {
-      return `<tr><td>${escapeHtml(product.name)}</td><td>${escapeHtml(product.application)}</td><td>${formatArea(product.area)}</td><td>${formatKg(product.requiredKg)}</td><td>${formatMoney(product.grossValue)}</td></tr>`;
+    if (!totals.productTotals.length) return '<tr><td colspan="7">Nenhum produto cadastrado.</td></tr>';
+    const rows = totals.productTotals.map((product) => {
+      return `<tr><td>${escapeHtml(product.name)}</td><td>${escapeHtml(product.application)}</td><td>${formatArea(product.area)}</td><td>${formatKg(product.consumption)}/m2</td><td>${formatKg(product.requiredKg)}</td><td>${formatMoney(product.price)}</td><td>${formatMoney(product.grossValue)}</td></tr>`;
     }).join('');
+    const totalRow = `<tr class="table-total"><td colspan="4"><strong>Total de materiais</strong></td><td><strong>${formatKg(totals.requiredKg)}</strong></td><td></td><td><strong>${formatMoney(totals.grossValue)}</strong></td></tr>`;
+    return rows + totalRow;
   }
 
   function printPdf() {
@@ -338,11 +366,12 @@
 
     const address = [data.jobAddress, data.jobDistrict, data.jobCity].filter(Boolean).join(' - ');
     const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Orcamento Revest House Obras 1.0</title><style>
-      body{font-family:Arial,Helvetica,sans-serif;color:#172018;margin:0;padding:30px;background:#fff} h1,h2,p{margin-top:0} .top{display:flex;justify-content:space-between;gap:20px;border-bottom:3px solid #1f6b3a;padding-bottom:18px;margin-bottom:22px}.brand h1{font-size:30px;margin-bottom:6px}.brand p,.meta p{color:#5f6b61;margin:4px 0}.box{border:1px solid #d8dfd4;border-radius:8px;padding:14px;margin-bottom:16px;break-inside:avoid}h2{font-size:18px;color:#1f6b3a;margin-bottom:10px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px}.line{margin:0 0 6px}.label{font-weight:700;color:#5f6b61}table{width:100%;border-collapse:collapse;margin-top:8px}th,td{text-align:left;border-bottom:1px solid #d8dfd4;padding:9px 7px;vertical-align:top}th{background:#eef4eb}.totals{display:grid;grid-template-columns:1fr 1fr;gap:10px}.total-final{background:#173f29;color:white;border-radius:8px;padding:14px}.total-final strong{font-size:24px}.signature{margin-top:34px;border-top:1px solid #172018;padding-top:10px;width:320px}@media print{body{padding:0}.no-print{display:none}}\n+    </style></head><body>
+      body{font-family:Arial,Helvetica,sans-serif;color:#172018;margin:0;padding:30px;background:#fff} h1,h2,p{margin-top:0} .top{display:flex;justify-content:space-between;gap:20px;border-bottom:3px solid #1f6b3a;padding-bottom:18px;margin-bottom:22px}.brand h1{font-size:30px;margin-bottom:6px}.brand p,.meta p{color:#5f6b61;margin:4px 0}.box{border:1px solid #d8dfd4;border-radius:8px;padding:14px;margin-bottom:16px;break-inside:avoid}h2{font-size:18px;color:#1f6b3a;margin-bottom:10px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px}.line{margin:0 0 6px}.label{font-weight:700;color:#5f6b61}table{width:100%;border-collapse:collapse;margin-top:8px}th,td{text-align:left;border-bottom:1px solid #d8dfd4;padding:9px 7px;vertical-align:top}th{background:#eef4eb}.table-total td{background:#eef4eb}.totals{display:grid;grid-template-columns:1fr 1fr;gap:10px}.total-final{background:#173f29;color:white;border-radius:8px;padding:14px}.total-final strong{font-size:24px}.signature{margin-top:34px;border-top:1px solid #172018;padding-top:10px;width:320px}@media print{body{padding:0}.no-print{display:none}}
+    </style></head><body>
       <section class="top"><div class="brand"><h1>Revest House Obras 1.0</h1><p>Orcamento de materiais e aplicacao</p></div><div class="meta"><p><span class="label">Data:</span> ${escapeHtml(data.budgetDate || '')}</p><p><span class="label">Vendedor:</span> ${escapeHtml(data.sellerName || '')}</p><p><span class="label">Contato:</span> ${escapeHtml(data.sellerWhatsapp || data.sellerEmail || '')}</p></div></section>
       <section class="box"><h2>Cliente</h2><div class="grid"><p class="line"><span class="label">Nome:</span> ${escapeHtml(data.clientName)}</p><p class="line"><span class="label">WhatsApp:</span> ${escapeHtml(data.clientWhatsapp)}</p><p class="line"><span class="label">E-mail:</span> ${escapeHtml(data.clientEmail)}</p><p class="line"><span class="label">CPF/CNPJ:</span> ${escapeHtml(data.clientDocument)}</p></div><p class="line"><span class="label">Observacoes:</span> ${escapeHtml(data.clientNotes)}</p></section>
       <section class="box"><h2>Obra</h2><div class="grid"><p class="line"><span class="label">Nome:</span> ${escapeHtml(data.jobName)}</p><p class="line"><span class="label">Tipo:</span> ${escapeHtml(data.jobType)}</p></div><p class="line"><span class="label">Endereco:</span> ${escapeHtml(address)}</p></section>
-      <section class="box"><h2>Materiais</h2><table><thead><tr><th>Produto</th><th>Aplicacao</th><th>Area aplicada</th><th>Quantidade</th><th>Valor</th></tr></thead><tbody>${buildProductRows(totals)}</tbody></table></section>
+      <section class="box"><h2>Materiais</h2><table><thead><tr><th>Produto</th><th>Aplicacao</th><th>Metragem</th><th>Consumo</th><th>Quantidade</th><th>Preco/kg</th><th>Valor</th></tr></thead><tbody>${buildProductRows(totals)}</tbody></table></section>
       <section class="box"><h2>Medicoes</h2><table><thead><tr><th>Area</th><th>Largura</th><th>Altura</th><th>Metragem</th><th>Produtos</th></tr></thead><tbody>${buildMeasurementRows(data)}</tbody></table></section>
       <section class="box"><h2>Total com desconto</h2><div class="totals"><p class="line"><span class="label">Area total:</span> ${formatArea(totals.totalArea)}</p><p class="line"><span class="label">Quantidade total:</span> ${formatKg(totals.requiredKg)}</p><p class="line"><span class="label">Valor bruto:</span> ${formatMoney(totals.grossValue)}</p><p class="line"><span class="label">Desconto:</span> ${formatMoney(totals.discountValue)}</p></div><div class="total-final"><span>Valor final</span><br><strong>${formatMoney(totals.finalValue)}</strong></div></section>
       <section class="box"><h2>Observacoes comerciais</h2><p>${escapeHtml(data.commercialNotes)}</p></section>

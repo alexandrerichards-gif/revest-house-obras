@@ -313,13 +313,22 @@ select:focus {
 
 .product-summary-item {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) repeat(3, max-content);
+  grid-template-columns: minmax(0, 1fr) repeat(5, max-content);
   gap: 10px;
   align-items: center;
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fbfcfa;
+}
+
+.product-summary-header {
+  background: #eef4eb;
+}
+
+.product-summary-total {
+  border-color: var(--brand);
+  background: #eef4eb;
 }
 
 .product-summary-item span {
